@@ -40,13 +40,20 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_PRIVATE_KEY }}
 
-    - name: Install Docker on EC2 & Deploy Container
+    - name: Install Docker on EC2 & Configure Permissions
       run: |
         ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << EOF
         sudo apt update
         sudo apt install docker.io -y
         sudo systemctl start docker
         sudo systemctl enable docker
+        sudo usermod -aG docker ubuntu  # Add ubuntu user to docker group
+        newgrp docker  # Apply the change without logout
+        EOF
+
+    - name: Deploy Container on EC2
+      run: |
+        ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << EOF
         docker pull ${{ secrets.DOCKER_USERNAME }}/python-hello-world
         docker stop python-container || true
         docker rm python-container || true
