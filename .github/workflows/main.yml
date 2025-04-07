@@ -25,6 +25,14 @@ jobs:
     needs: build-and-push-image
     runs-on: ubuntu-latest
     steps:
+
+    - name: Add SSH Key & Configure Known Hosts
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
     - name: Set up SSH Key
       uses: appleboy/ssh-action@master
       with:
